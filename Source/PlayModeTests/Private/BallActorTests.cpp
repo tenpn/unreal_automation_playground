@@ -40,7 +40,7 @@ protected:
 };
 
 
-TEST_CLASS(FEmptyLevelBallTests, "Project.ActorTests.EmptyLevelBall")
+TEST_CLASS(FEmptyLevelBallTests, "Project.ActorTests.Ball")
 {
 	TUniquePtr<FMapTestSpawner> Spawner;
 	AActor* Block;
