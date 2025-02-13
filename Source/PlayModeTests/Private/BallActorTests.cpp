@@ -38,3 +38,33 @@ protected:
 		    FTimespan::FromSeconds(3));
 	}
 };
+
+
+TEST_CLASS(FEmptyLevelBallTests, "Project.ActorTests.EmptyLevelBall")
+{
+	TUniquePtr<FMapTestSpawner> Spawner;
+	AActor* Block;
+	
+protected:
+	BEFORE_EACH()
+	{
+		Spawner = FMapTestSpawner::CreateFromTempLevel(TestCommandBuilder);
+		Spawner->AddWaitUntilLoadedCommand(TestRunner);
+		TestCommandBuilder
+		    .StartWhen([this](){return nullptr != Spawner->FindFirstPlayerPawn(); }, FTimespan::FromSeconds(30))
+		    .Do([this] {
+		    	const auto Player = Spawner->FindFirstPlayerPawn();
+				const auto BlockClass = CQTestAssetHelper::GetBlueprintClass("SM_ChamferCube3_Blueprint");
+		    	const FTransform NearPlayer(Player->GetActorLocation()
+		    		+ Player->GetActorForwardVector()*20
+		    		+ FVector::UpVector*20);
+		    	Block = &TObjectBuilder<AActor>(*Spawner, BlockClass)
+		    	    .Spawn(NearPlayer);
+		    });
+	}
+
+	TEST_METHOD(Physics_InAir_Falls)
+	{
+		TestCommandBuilder.WaitDelay(FTimespan::FromSeconds(10));
+	}
+};
