@@ -10,7 +10,7 @@
 bool UMapContentsValidator::CanValidateAsset_Implementation(const FAssetData& InAssetData, UObject* InObject,
                                                             FDataValidationContext& InContext) const
 {
-	return InObject != nullptr && InObject->IsA<UWorld>();
+	return InObject != nullptr && InObject->IsA<UWorld>() && InObject->GetPathName().Contains("TestMapTemp") == false;
 }
 
 EDataValidationResult UMapContentsValidator::ValidateLoadedAsset_Implementation(const FAssetData& InAssetData,
