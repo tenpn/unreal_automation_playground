@@ -3,6 +3,7 @@
 #include "Engine/SCS_Node.h"
 #include "Engine/SimpleConstructionScript.h"
 
+/** to help find all blueprints derived from a specific class */
 template<typename BaseT>
 void AddChildrenBlueprintsToFilter(FARFilter& Filter)
 {
@@ -16,12 +17,41 @@ void AddChildrenBlueprintsToFilter(FARFilter& Filter)
 			Filter.TagsAndValues.Add( FBlueprintTags::NativeParentClassPath,FObjectPropertyBase::GetExportPath(Class)); 
 		}
 	}
-	/*FTopLevelAssetPath TopLevelAssetPath = AInteractable::StaticClass()->GetClassPathName();
-	AllAInteractablesFilter.ClassPaths.Add(TopLevelAssetPath);
-	AllAInteractablesFilter.ClassPaths.Add(AActor::StaticClass()->GetClassPathName());
-	*/
 	Filter.ClassPaths.Add(UBlueprint::StaticClass()->GetClassPathName());
 	Filter.bRecursiveClasses = true;
+}
+
+/** it's hard to fetch all components from a BP, including c++ base class components! use this. */
+template<typename BaseT>
+void ForAllComponentsOfType(const UBlueprint& BP, TFunctionRef<void (const FString& CompName, const BaseT& Comp)> Handler)
+{
+	if (const auto BPClass = Cast<UBlueprintGeneratedClass>(BP.GeneratedClass))
+	{
+		const auto CtorScript = BPClass->SimpleConstructionScript;
+		const TArray<USCS_Node*>& CtorNodes = CtorScript->GetAllNodes();
+		for(const auto CtorNode : CtorNodes)
+		{
+			const auto CtorNodeClass = CtorNode->ComponentClass;
+			if (CtorNodeClass->IsChildOf(USceneComponent::StaticClass()))
+			{
+				const auto CtorNodeComponentName = CtorNode->GetVariableName();
+				const auto CtorSceneComp = Cast<const USceneComponent>(CtorNode->GetActualComponentTemplate(BPClass));
+				Handler(CtorNodeComponentName.ToString(), *CtorSceneComp);
+			}
+		}
+	}
+
+	static TArray<UObject*> SubObjects;
+	SubObjects.Empty();
+	UObject* const DefaultObject = BP.GeneratedClass->GetDefaultObject();;
+	DefaultObject->GetDefaultSubobjects(SubObjects);
+	for ( const auto SubObject : SubObjects )
+	{
+		if ( const auto SceneComponent = Cast<const USceneComponent>(SubObject) )
+		{
+			Handler(SceneComponent->GetName(), *SceneComponent);
+		}
+	}
 }
 
 BEGIN_DEFINE_SPEC(
@@ -46,45 +76,14 @@ void FInteractableActorsAssetTests::Define()
 		{
 			It("Has relative transform components",[this,Asset]()
 			{
-				TArray<UObject*> SubObjects;
-			
-				UObject* const AssetObject = Asset.GetAsset();
-				const auto Blueprint = Cast<const UBlueprint>(AssetObject);
+				const auto Blueprint = Cast<const UBlueprint>(Asset.GetAsset());
 				TestNotNull("expected blueprint classes only", Blueprint);
-				UObject* DefaultObject = Blueprint->GeneratedClass->GetDefaultObject();;
-				DefaultObject->GetDefaultSubobjects(SubObjects);
-
-				if (const auto BPClass = Cast<UBlueprintGeneratedClass>(Blueprint->GeneratedClass))
+				ForAllComponentsOfType<USceneComponent>(*Blueprint, [this](const FString& CompName, const auto& Comp)
 				{
-					const auto CtorScript = BPClass->SimpleConstructionScript;
-					const TArray<USCS_Node*>& CtorNodes = CtorScript->GetAllNodes();
-					for(const auto CtorNode : CtorNodes)
-					{
-						const auto CtorNodeClass = CtorNode->ComponentClass;
-						if (CtorNodeClass->IsChildOf(USceneComponent::StaticClass()))
-						{
-							const auto CtorNodeComponentName = CtorNode->GetVariableName();
-							const auto CtorSceneComp = Cast<const USceneComponent>(CtorNode->GetActualComponentTemplate(BPClass));
-							TestFalse("\"" + CtorNodeComponentName.ToString() + "\" Location", CtorSceneComp->IsUsingAbsoluteLocation());
-							TestFalse("\"" + CtorNodeComponentName.ToString() + "\" Rotation", CtorSceneComp->IsUsingAbsoluteRotation());
-							TestFalse("\"" + CtorNodeComponentName.ToString() + "\" Scale", CtorSceneComp->IsUsingAbsoluteScale());
-						}
-					}
-				}
-
-				AActor* const Temp = NewObject<AActor>(GetTransientPackage(), Blueprint->GeneratedClass);
-				TArray<UActorComponent*> InstancedComponents;
-				Temp->GetComponents(InstancedComponents, true);
-
-				for ( const auto SubObject : SubObjects )
-				{
-					if ( const auto SceneComponent = Cast<const USceneComponent>(SubObject) )
-					{
-						TestFalse("\"" + SceneComponent->GetName() + "\" Location", SceneComponent->IsUsingAbsoluteLocation());
-						TestFalse("\"" + SceneComponent->GetName() + "\" Rotation", SceneComponent->IsUsingAbsoluteRotation());
-						TestFalse("\"" + SceneComponent->GetName() + "\" Scale", SceneComponent->IsUsingAbsoluteScale());
-					}
-				}
+					TestFalse("\"" + CompName + "\" using absolute location", Comp.IsUsingAbsoluteLocation());
+					TestFalse("\"" + CompName + "\" using absolute rotation", Comp.IsUsingAbsoluteRotation());
+					TestFalse("\"" + CompName + "\" using absolute scale", Comp.IsUsingAbsoluteScale());
+				});
 			});
 		});			
 	}
