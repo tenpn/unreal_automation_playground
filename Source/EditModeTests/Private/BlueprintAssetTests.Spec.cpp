@@ -1,8 +1,6 @@
 #include "EditModeTestUtilities.h"
 #include "Interactable.h"
 #include "AssetRegistry/AssetRegistryModule.h"
-#include "Engine/SCS_Node.h"
-#include "Engine/SimpleConstructionScript.h"
 
 /** to help find all blueprints derived from a specific class */
 template<typename BaseT>
