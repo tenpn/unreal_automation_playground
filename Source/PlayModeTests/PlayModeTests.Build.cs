@@ -7,6 +7,6 @@ public class PlayModeTests : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
-		PrivateDependencyModuleNames.AddRange(new [] { "CQTest", "automationplayg5_5", "DataValidation" });
+		PrivateDependencyModuleNames.AddRange(new [] { "CQTest", "automationplayg5_5"});
 	}
 }

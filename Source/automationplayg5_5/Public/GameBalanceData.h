@@ -21,5 +21,7 @@ class AUTOMATIONPLAYG5_5_API UGameBalanceData : public UDataAsset
 	int MaxPlayerHealth = 100;
 
 public:
+#if WITH_EDITOR
 	virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) const override;
+#endif
 };

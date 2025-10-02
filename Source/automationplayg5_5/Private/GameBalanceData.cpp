@@ -5,6 +5,7 @@
 
 #include "Misc/DataValidation.h"
 
+#if WITH_EDITOR
 EDataValidationResult UGameBalanceData::IsDataValid(FDataValidationContext& Context) const
 {
 	bool bIsInvalid = false;
@@ -18,3 +19,4 @@ EDataValidationResult UGameBalanceData::IsDataValid(FDataValidationContext& Cont
 	const auto BaseValiditiy = Super::IsDataValid(Context); 
 	return bIsInvalid ? EDataValidationResult::Invalid : BaseValiditiy;
 }
+#endif

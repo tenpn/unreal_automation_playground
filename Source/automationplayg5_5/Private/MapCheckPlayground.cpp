@@ -13,6 +13,7 @@ AMapCheckPlayground::AMapCheckPlayground()
 
 }
 
+#if WITH_EDITOR
 void AMapCheckPlayground::CheckForErrors()
 {
     FMessageLog MapCheck("MapCheck");
@@ -24,6 +25,7 @@ void AMapCheckPlayground::CheckForErrors()
             ->AddToken(FTextToken::Create(FText::FromString("has a bad thing!")));
     }
 }
+#endif
 
 // Called when the game starts or when spawned
 void AMapCheckPlayground::BeginPlay()
