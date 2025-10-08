@@ -28,7 +28,7 @@ EDataValidationResult UInteractableAssetValidator::ValidateLoadedAsset_Implement
 	UObject* const InAsset, FDataValidationContext& Context)
 {
 	const auto BPObject = Cast<const UBlueprint>(InAsset);
-	ForAllComponentsOfType<USceneComponent>(*BPObject, [&Context](const FString& CompName, const auto& Comp)
+	ForAllComponentsOfType<const USceneComponent>(*BPObject, [&Context](const FString& CompName, const auto& Comp)
 	{
 		if (Comp.IsUsingAbsoluteLocation())
 		{

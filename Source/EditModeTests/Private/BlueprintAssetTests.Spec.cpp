@@ -44,7 +44,7 @@ void FInteractableActorsAssetTests::Define()
 			{
 				const auto Blueprint = Cast<const UBlueprint>(Asset.GetAsset());
 				TestNotNull("expected blueprint classes only", Blueprint);
-				ForAllComponentsOfType<USceneComponent>(*Blueprint, [this](const FString& CompName, const auto& Comp)
+				ForAllComponentsOfType<const USceneComponent>(*Blueprint, [this](const FString& CompName, const auto& Comp)
 				{
 					TestFalse("\"" + CompName + "\" using absolute location", Comp.IsUsingAbsoluteLocation());
 					TestFalse("\"" + CompName + "\" using absolute rotation", Comp.IsUsingAbsoluteRotation());

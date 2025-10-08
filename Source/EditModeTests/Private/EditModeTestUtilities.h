@@ -15,11 +15,11 @@ void ForAllComponentsOfType(const UBlueprint& BP, TFunctionRef<void (const FStri
 		for(const auto CtorNode : CtorNodes)
 		{
 			const auto CtorNodeClass = CtorNode->ComponentClass;
-			if (CtorNodeClass->IsChildOf(USceneComponent::StaticClass()))
+			if (CtorNodeClass->IsChildOf(BaseT::StaticClass()))
 			{
 				const auto CtorNodeComponentName = CtorNode->GetVariableName();
-				const auto CtorSceneComp = Cast<const USceneComponent>(CtorNode->GetActualComponentTemplate(BPClass));
-				Handler(CtorNodeComponentName.ToString(), *CtorSceneComp);
+				const auto CtorComp = Cast<BaseT>(CtorNode->GetActualComponentTemplate(BPClass));
+				Handler(CtorNodeComponentName.ToString(), *CtorComp);
 			}
 		}
 	}
@@ -30,9 +30,9 @@ void ForAllComponentsOfType(const UBlueprint& BP, TFunctionRef<void (const FStri
 	DefaultObject->GetDefaultSubobjects(SubObjects);
 	for ( const auto SubObject : SubObjects )
 	{
-		if ( const auto SceneComponent = Cast<const USceneComponent>(SubObject) )
+		if ( const auto Component = Cast<BaseT>(SubObject) )
 		{
-			Handler(SceneComponent->GetName(), *SceneComponent);
+			Handler(Component->GetName(), *Component);
 		}
 	}
 }
